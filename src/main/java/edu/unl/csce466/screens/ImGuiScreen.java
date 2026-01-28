@@ -48,7 +48,6 @@ public class ImGuiScreen extends Screen {
         ImGui.begin("GD Mega Hack v8 - Minecraft Edition", windowOpen,
                 ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize);
 
-        // Neon заголовок
         ImGui.pushStyleColor(ImGuiCol.Text, 0.0f, 0.82f, 1.0f, 1.0f);
         ImGui.text("   GEOMETRIC DASH MEGA HACK   ");
         ImGui.text("       PORTED TO MINECRAFT 1.19.2       ");
@@ -109,7 +108,7 @@ public class ImGuiScreen extends Screen {
         }
 
         ImGui.separator();
-        ImGui.textDisabled("ImGui-Java 1.90.0 | Forge 1.19.2");
+        ImGui.textDisabled("ImGui-Java ~1.90 | Forge 1.19.2");
 
         ImGui.end();
 
@@ -128,31 +127,31 @@ public class ImGuiScreen extends Screen {
         style.setWindowPadding(16.0f, 16.0f);
         style.setItemSpacing(10.0f, 6.0f);
 
-        // Цвета напрямую через new ImVec4 (r,g,b,a в [0..1])
-        style.setColor(ImGuiCol.WindowBg, new ImVec4(20f/255f, 20f/255f, 40f/255f, 240f/255f));  // #141428
-        style.setColor(ImGuiCol.TitleBg, new ImVec4(10f/255f, 10f/255f, 30f/255f, 240f/255f));   // #0a0a1e
-        style.setColor(ImGuiCol.TitleBgActive, new ImVec4(0f/255f, 100f/255f, 255f/255f, 220f/255f)); // Neon cyan
-        style.setColor(ImGuiCol.MenuBarBg, new ImVec4(15f/255f, 15f/255f, 35f/255f, 240f/255f));
+        // Цвета в формате ImU32 через colorConvertFloat4ToU32
+        style.setColor(ImGuiCol.WindowBg,        ImGui.colorConvertFloat4ToU32(new ImVec4(20f/255f, 20f/255f, 40f/255f, 240f/255f)));
+        style.setColor(ImGuiCol.TitleBg,         ImGui.colorConvertFloat4ToU32(new ImVec4(10f/255f, 10f/255f, 30f/255f, 240f/255f)));
+        style.setColor(ImGuiCol.TitleBgActive,   ImGui.colorConvertFloat4ToU32(new ImVec4(0f/255f, 100f/255f, 255f/255f, 220f/255f)));
+        style.setColor(ImGuiCol.MenuBarBg,       ImGui.colorConvertFloat4ToU32(new ImVec4(15f/255f, 15f/255f, 35f/255f, 240f/255f)));
 
-        style.setColor(ImGuiCol.FrameBg, new ImVec4(30f/255f, 30f/255f, 60f/255f, 200f/255f));
-        style.setColor(ImGuiCol.FrameBgHovered, new ImVec4(0f/255f, 120f/255f, 255f/255f, 180f/255f));
-        style.setColor(ImGuiCol.FrameBgActive, new ImVec4(0f/255f, 140f/255f, 255f/255f, 220f/255f));
+        style.setColor(ImGuiCol.FrameBg,         ImGui.colorConvertFloat4ToU32(new ImVec4(30f/255f, 30f/255f, 60f/255f, 200f/255f)));
+        style.setColor(ImGuiCol.FrameBgHovered,  ImGui.colorConvertFloat4ToU32(new ImVec4(0f/255f, 120f/255f, 255f/255f, 180f/255f)));
+        style.setColor(ImGuiCol.FrameBgActive,   ImGui.colorConvertFloat4ToU32(new ImVec4(0f/255f, 140f/255f, 255f/255f, 220f/255f)));
 
-        style.setColor(ImGuiCol.Button, new ImVec4(0f/255f, 80f/255f, 200f/255f, 180f/255f));
-        style.setColor(ImGuiCol.ButtonHovered, new ImVec4(0f/255f, 120f/255f, 255f/255f, 220f/255f));
-        style.setColor(ImGuiCol.ButtonActive, new ImVec4(0f/255f, 160f/255f, 255f/255f, 255f/255f));
+        style.setColor(ImGuiCol.Button,          ImGui.colorConvertFloat4ToU32(new ImVec4(0f/255f, 80f/255f, 200f/255f, 180f/255f)));
+        style.setColor(ImGuiCol.ButtonHovered,   ImGui.colorConvertFloat4ToU32(new ImVec4(0f/255f, 120f/255f, 255f/255f, 220f/255f)));
+        style.setColor(ImGuiCol.ButtonActive,    ImGui.colorConvertFloat4ToU32(new ImVec4(0f/255f, 160f/255f, 255f/255f, 255f/255f)));
 
-        style.setColor(ImGuiCol.SliderGrab, new ImVec4(0f/255f, 140f/255f, 255f/255f, 220f/255f));
-        style.setColor(ImGuiCol.SliderGrabActive, new ImVec4(0f/255f, 180f/255f, 255f/255f, 255f/255f));
+        style.setColor(ImGuiCol.SliderGrab,      ImGui.colorConvertFloat4ToU32(new ImVec4(0f/255f, 140f/255f, 255f/255f, 220f/255f)));
+        style.setColor(ImGuiCol.SliderGrabActive,ImGui.colorConvertFloat4ToU32(new ImVec4(0f/255f, 180f/255f, 255f/255f, 255f/255f)));
 
-        style.setColor(ImGuiCol.CheckMark, new ImVec4(0f/255f, 160f/255f, 255f/255f, 255f/255f));
-        style.setColor(ImGuiCol.Tab, new ImVec4(30f/255f, 30f/255f, 60f/255f, 200f/255f));
-        style.setColor(ImGuiCol.TabHovered, new ImVec4(0f/255f, 120f/255f, 255f/255f, 220f/255f));
-        style.setColor(ImGuiCol.TabActive, new ImVec4(0f/255f, 100f/255f, 255f/255f, 255f/255f));
+        style.setColor(ImGuiCol.CheckMark,       ImGui.colorConvertFloat4ToU32(new ImVec4(0f/255f, 160f/255f, 255f/255f, 255f/255f)));
+        style.setColor(ImGuiCol.Tab,             ImGui.colorConvertFloat4ToU32(new ImVec4(30f/255f, 30f/255f, 60f/255f, 200f/255f)));
+        style.setColor(ImGuiCol.TabHovered,      ImGui.colorConvertFloat4ToU32(new ImVec4(0f/255f, 120f/255f, 255f/255f, 220f/255f)));
+        style.setColor(ImGuiCol.TabActive,       ImGui.colorConvertFloat4ToU32(new ImVec4(0f/255f, 100f/255f, 255f/255f, 255f/255f)));
 
-        style.setColor(ImGuiCol.ScrollbarBg, new ImVec4(10f/255f, 10f/255f, 20f/255f, 180f/255f));
-        style.setColor(ImGuiCol.ScrollbarGrab, new ImVec4(0f/255f, 100f/255f, 255f/255f, 200f/255f));
-        style.setColor(ImGuiCol.ScrollbarGrabHovered, new ImVec4(0f/255f, 140f/255f, 255f/255f, 220f/255f));
+        style.setColor(ImGuiCol.ScrollbarBg,     ImGui.colorConvertFloat4ToU32(new ImVec4(10f/255f, 10f/255f, 20f/255f, 180f/255f)));
+        style.setColor(ImGuiCol.ScrollbarGrab,   ImGui.colorConvertFloat4ToU32(new ImVec4(0f/255f, 100f/255f, 255f/255f, 200f/255f)));
+        style.setColor(ImGuiCol.ScrollbarGrabHovered, ImGui.colorConvertFloat4ToU32(new ImVec4(0f/255f, 140f/255f, 255f/255f, 220f/255f)));
     }
 
     @Override
