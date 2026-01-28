@@ -36,7 +36,7 @@ public class ImGuiScreen extends Screen {
         io.setMousePos((float) mc.mouseHandler.xpos(), (float) mc.mouseHandler.ypos());
 
         ImGuiRenderer.getInstance().draw(() -> {
-            setupStyle();
+            setupTransparentCalmStyle();
 
             ImGui.begin("ImGui Example");
             ImGui.text("Minecraft 1.19.2 + ImGui");
@@ -57,10 +57,10 @@ public class ImGuiScreen extends Screen {
         });
     }
 
-    private void setupStyle() {
+    private void setupTransparentCalmStyle() {
         ImGuiStyle style = ImGui.getStyle();
 
-        // Базовые скругления и отступы
+        // Скругления и отступы (оставляем как было)
         style.setWindowRounding(6.0f);
         style.setFrameRounding(4.0f);
         style.setTabRounding(4.0f);
@@ -70,34 +70,34 @@ public class ImGuiScreen extends Screen {
         style.setFramePadding(6.0f, 4.0f);
         style.setItemSpacing(8.0f, 6.0f);
 
-        // Основные цвета
-        style.setColor(ImGuiCol.WindowBg,       rgba(30, 30, 35, 240));     // тёмный фон окна
-        style.setColor(ImGuiCol.TitleBg,        rgba(231, 57, 102, 240));   // основной цвет заголовка (когда окно не активно)
-        style.setColor(ImGuiCol.TitleBgActive,  rgba(241, 87, 132, 240));   // чуть светлее, когда окно активно/фокус
-        style.setColor(ImGuiCol.TitleBgCollapsed, rgba(231, 57, 102, 180));
+        // Более прозрачно везде (alpha 180–220 вместо 240–255)
+        style.setColor(ImGuiCol.WindowBg,       rgba(30, 30, 35, 180));      // фон окна прозрачнее
+        style.setColor(ImGuiCol.TitleBg,        rgba(245, 70, 130, 220));    // основной заголовок — более розовый
+        style.setColor(ImGuiCol.TitleBgActive,  rgba(255, 90, 150, 220));    // активный — ещё ярче и розовее
+        style.setColor(ImGuiCol.TitleBgCollapsed, rgba(245, 70, 130, 160));  // свёрнутый — полупрозрачный
 
-        // Текст — полностью белый
+        // Текст белый
         style.setColor(ImGuiCol.Text,           rgba(255, 255, 255, 255));
-        style.setColor(ImGuiCol.TextDisabled,   rgba(180, 180, 190, 180));
+        style.setColor(ImGuiCol.TextDisabled,   rgba(180, 180, 190, 140));
 
-        // Табы — спокойные
-        style.setColor(ImGuiCol.Tab,            rgba(42, 42, 42, 255));
-        style.setColor(ImGuiCol.TabHovered,     rgba(60, 60, 65, 255));
-        style.setColor(ImGuiCol.TabActive,      rgba(50, 50, 55, 255));
-        style.setColor(ImGuiCol.TabUnfocused,   rgba(42, 42, 42, 200));
-        style.setColor(ImGuiCol.TabUnfocusedActive, rgba(50, 50, 55, 200));
+        // Табы — полупрозрачные
+        style.setColor(ImGuiCol.Tab,            rgba(42, 42, 42, 180));
+        style.setColor(ImGuiCol.TabHovered,     rgba(60, 60, 65, 200));
+        style.setColor(ImGuiCol.TabActive,      rgba(50, 50, 55, 220));
+        style.setColor(ImGuiCol.TabUnfocused,   rgba(42, 42, 42, 140));
+        style.setColor(ImGuiCol.TabUnfocusedActive, rgba(50, 50, 55, 160));
 
-        // Кнопки и фреймы — нейтральные
-        style.setColor(ImGuiCol.Button,         rgba(70, 70, 80, 200));
-        style.setColor(ImGuiCol.ButtonHovered,  rgba(90, 90, 100, 220));
-        style.setColor(ImGuiCol.ButtonActive,   rgba(110, 110, 120, 255));
-        style.setColor(ImGuiCol.CheckMark,      rgba(231, 57, 102, 255));   // акцент на чекбоксе
-        style.setColor(ImGuiCol.FrameBg,        rgba(50, 50, 55, 200));
-        style.setColor(ImGuiCol.FrameBgHovered, rgba(70, 70, 80, 220));
-        style.setColor(ImGuiCol.FrameBgActive,  rgba(90, 90, 100, 255));
+        // Кнопки — полупрозрачные
+        style.setColor(ImGuiCol.Button,         rgba(70, 70, 80, 160));
+        style.setColor(ImGuiCol.ButtonHovered,  rgba(90, 90, 100, 180));
+        style.setColor(ImGuiCol.ButtonActive,   rgba(110, 110, 120, 220));
+        style.setColor(ImGuiCol.CheckMark,      rgba(245, 70, 130, 255));    // акцент на чекбоксе (розовый)
+        style.setColor(ImGuiCol.FrameBg,        rgba(50, 50, 55, 160));
+        style.setColor(ImGuiCol.FrameBgHovered, rgba(70, 70, 80, 180));
+        style.setColor(ImGuiCol.FrameBgActive,  rgba(90, 90, 100, 220));
     }
 
-    // Вспомогательная функция для ImU32 цвета
+    // Функция для ImU32 цвета
     private int rgba(int r, int g, int b, int a) {
         return (a << 24) | (r << 16) | (g << 8) | b;
     }
