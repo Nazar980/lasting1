@@ -10,7 +10,6 @@ import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -19,9 +18,9 @@ public class ImGuiScreen extends Screen {
     private static ImGuiScreen _INSTANCE = null;
     private boolean buttonClicked = false;
     private final ImBoolean showDemo = new ImBoolean(false);
-    private final ImBoolean showStyleEditor = new ImBoolean(false); // чекбокс для открытия редактора стиля
+    private final ImBoolean showStyleEditor = new ImBoolean(false);
 
-    // Храним цвета как ImVec4 (для colorEdit4)
+    // Храним цвета как ImVec4 (0..1)
     private final ImVec4 colWindowBg = new ImVec4(30/255f, 30/255f, 35/255f, 180/255f);
     private final ImVec4 colTitleBg = new ImVec4(245/255f, 70/255f, 130/255f, 220/255f);
     private final ImVec4 colTitleBgActive = new ImVec4(255/255f, 90/255f, 150/255f, 220/255f);
@@ -55,9 +54,8 @@ public class ImGuiScreen extends Screen {
         io.setMousePos((float) mc.mouseHandler.xpos(), (float) mc.mouseHandler.ypos());
 
         ImGuiRenderer.getInstance().draw(() -> {
-            applyCurrentColors(); // Применяем цвета из переменных
+            applyCurrentColors();
 
-            // Центрируем окно
             ImGui.setNextWindowSize(500, 400, ImGuiCond.FirstUseEver);
             ImGui.setNextWindowPos(
                 (io.getDisplaySizeX() - 500) * 0.5f,
@@ -69,7 +67,6 @@ public class ImGuiScreen extends Screen {
 
             ImGui.begin("GD Mega Hack - Style Editor", flags);
 
-            // Заголовок центрирован
             String titleText = "GD Mega Hack";
             float textWidth = ImGui.calcTextSize(titleText).x;
             float titleBarWidth = ImGui.getWindowWidth() - ImGui.getStyle().getWindowPaddingX() * 2;
@@ -79,9 +76,7 @@ public class ImGuiScreen extends Screen {
 
             ImGui.separator();
 
-            // Чекбокс для открытия редактора стилей
             ImGui.checkbox("Open Style Color Editor", showStyleEditor);
-
             ImGui.separator();
 
             ImGui.text("Test elements:");
@@ -95,10 +90,8 @@ public class ImGuiScreen extends Screen {
 
             ImGui.end();
 
-            // Окно редактора стилей (если включено)
             if (showStyleEditor.get()) {
                 ImGui.begin("Style Color Editor", showStyleEditor);
-
                 ImGui.text("Change colors live:");
 
                 ImGui.colorEdit4("WindowBg", colWindowBg);
@@ -134,25 +127,23 @@ public class ImGuiScreen extends Screen {
     private void applyCurrentColors() {
         ImGuiStyle style = ImGui.getStyle();
 
-        // Применяем цвета из ImVec4 (0..1)
-        style.setColor(ImGuiCol.WindowBg,       colWindowBg.x, colWindowBg.y, colWindowBg.z, colWindowBg.w);
-        style.setColor(ImGuiCol.TitleBg,        colTitleBg.x, colTitleBg.y, colTitleBg.z, colTitleBg.w);
-        style.setColor(ImGuiCol.TitleBgActive,  colTitleBgActive.x, colTitleBgActive.y, colTitleBgActive.z, colTitleBgActive.w);
+        style.setColor(ImGuiCol.WindowBg, colWindowBg.x, colWindowBg.y, colWindowBg.z, colWindowBg.w);
+        style.setColor(ImGuiCol.TitleBg, colTitleBg.x, colTitleBg.y, colTitleBg.z, colTitleBg.w);
+        style.setColor(ImGuiCol.TitleBgActive, colTitleBgActive.x, colTitleBgActive.y, colTitleBgActive.z, colTitleBgActive.w);
         style.setColor(ImGuiCol.TitleBgCollapsed, colTitleBgCollapsed.x, colTitleBgCollapsed.y, colTitleBgCollapsed.z, colTitleBgCollapsed.w);
-        style.setColor(ImGuiCol.Text,           colText.x, colText.y, colText.z, colText.w);
-        style.setColor(ImGuiCol.TextDisabled,   colTextDisabled.x, colTextDisabled.y, colTextDisabled.z, colTextDisabled.w);
-        style.setColor(ImGuiCol.Tab,            colTab.x, colTab.y, colTab.z, colTab.w);
-        style.setColor(ImGuiCol.TabHovered,     colTabHovered.x, colTabHovered.y, colTabHovered.z, colTabHovered.w);
-        style.setColor(ImGuiCol.TabActive,      colTabActive.x, colTabActive.y, colTabActive.z, colTabActive.w);
-        style.setColor(ImGuiCol.Button,         colButton.x, colButton.y, colButton.z, colButton.w);
-        style.setColor(ImGuiCol.ButtonHovered,  colButtonHovered.x, colButtonHovered.y, colButtonHovered.z, colButtonHovered.w);
-        style.setColor(ImGuiCol.ButtonActive,   colButtonActive.x, colButtonActive.y, colButtonActive.z, colButtonActive.w);
-        style.setColor(ImGuiCol.CheckMark,      colCheckMark.x, colCheckMark.y, colCheckMark.z, colCheckMark.w);
-        style.setColor(ImGuiCol.FrameBg,        colFrameBg.x, colFrameBg.y, colFrameBg.z, colFrameBg.w);
+        style.setColor(ImGuiCol.Text, colText.x, colText.y, colText.z, colText.w);
+        style.setColor(ImGuiCol.TextDisabled, colTextDisabled.x, colTextDisabled.y, colTextDisabled.z, colTextDisabled.w);
+        style.setColor(ImGuiCol.Tab, colTab.x, colTab.y, colTab.z, colTab.w);
+        style.setColor(ImGuiCol.TabHovered, colTabHovered.x, colTabHovered.y, colTabHovered.z, colTabHovered.w);
+        style.setColor(ImGuiCol.TabActive, colTabActive.x, colTabActive.y, colTabActive.z, colTabActive.w);
+        style.setColor(ImGuiCol.Button, colButton.x, colButton.y, colButton.z, colButton.w);
+        style.setColor(ImGuiCol.ButtonHovered, colButtonHovered.x, colButtonHovered.y, colButtonHovered.z, colButtonHovered.w);
+        style.setColor(ImGuiCol.ButtonActive, colButtonActive.x, colButtonActive.y, colButtonActive.z, colButtonActive.w);
+        style.setColor(ImGuiCol.CheckMark, colCheckMark.x, colCheckMark.y, colCheckMark.z, colCheckMark.w);
+        style.setColor(ImGuiCol.FrameBg, colFrameBg.x, colFrameBg.y, colFrameBg.z, colFrameBg.w);
         style.setColor(ImGuiCol.FrameBgHovered, colFrameBgHovered.x, colFrameBgHovered.y, colFrameBgHovered.z, colFrameBgHovered.w);
-        style.setColor(ImGuiCol.FrameBgActive,  colFrameBgActive.x, colFrameBgActive.y, colFrameBgActive.z, colFrameBgActive.w);
+        style.setColor(ImGuiCol.FrameBgActive, colFrameBgActive.x, colFrameBgActive.y, colFrameBgActive.z, colFrameBgActive.w);
 
-        // Остальные настройки стиля
         style.setWindowRounding(0.0f);
         style.setFrameRounding(0.0f);
         style.setTabRounding(0.0f);
@@ -181,10 +172,6 @@ public class ImGuiScreen extends Screen {
         colFrameBg.set(50/255f, 50/255f, 55/255f, 160/255f);
         colFrameBgHovered.set(70/255f, 70/255f, 80/255f, 180/255f);
         colFrameBgActive.set(90/255f, 90/255f, 100/255f, 220/255f);
-    }
-
-    private int rgba(int r, int g, int b, int a) {
-        return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
     @Override
