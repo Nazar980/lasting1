@@ -210,12 +210,18 @@ public class ImGuiRenderer {
         System.out.println("====== [Ban Assistant] FONT INITIALIZATION COMPLETE ======\n");
     }
 
-    // Вспомогательный метод для загрузки файла из ассетс
+    // Вспомогательный метод для загрузки файла из ассетс (как в примере GitHub)
+    // Используем ClassLoader, как в официальном примере imgui-java
     private byte[] loadFontBytesFromAssets(String namespace, String path) throws Exception {
-        Minecraft mc = Minecraft.getInstance();
-        ResourceLocation fontResource = new ResourceLocation(namespace, path);
+        // Ищем файл в classpath (src/main/resources/assets/csce466/fonts/Roboto-Regular.ttf)
+        String resourcePath = "assets/" + namespace + "/" + path;
+        System.out.println("[FA] Loading from classpath: " + resourcePath);
         
-        InputStream is = mc.getResourceManager().getResource(fontResource).getInputStream();
+        InputStream is = getClass().getClassLoader().getResourceAsStream(resourcePath);
+        if (is == null) {
+            throw new Exception("Font resource not found in classpath: " + resourcePath);
+        }
+        
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         byte[] data = new byte[16384];
         int nRead;
@@ -223,6 +229,9 @@ public class ImGuiRenderer {
             buffer.write(data, 0, nRead);
         }
         is.close();
-        return buffer.toByteArray();
+        
+        byte[] result = buffer.toByteArray();
+        System.out.println("[FA] ✓ Loaded " + result.length + " bytes from classpath");
+        return result;
     }
 }
