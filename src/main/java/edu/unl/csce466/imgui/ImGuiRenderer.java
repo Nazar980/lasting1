@@ -1,5 +1,6 @@
 package edu.unl.csce466.imgui;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -148,79 +149,88 @@ public class ImGuiRenderer {
         ImGuiIO io = ImGui.getIO();
         System.out.println("\n\n====== [Ban Assistant] FONT LOADING DEBUG ======");
 
-        // ===== СТРАТЕГИЯ 1: Загружаем из ассетс мода (если файл там лежит) =====
-        System.out.println("[FA] Attempt 1: Load from assets (src/main/resources/assets/csce466/fonts/Roboto-Regular.ttf)");
+        // Диапазоны для ImGui: ASCII + Cyrillic
+        short[] cyrillicRanges = new short[] { 
+            0x0020, 0x007E,  // ASCII
+            0x0400, 0x044F,  // Cyrillic (Russian)
+            0  // End marker
+        };
+
+        // ===== СТРАТЕГИЯ 1: Загружаем из ассетс мода =====
+        System.out.println("[FA] Attempt 1: Load from assets (csce466:fonts/Roboto-Regular.ttf)");
         try {
             Minecraft mc = Minecraft.getInstance();
             ResourceLocation fontResource = new ResourceLocation("csce466", "fonts/Roboto-Regular.ttf");
-            System.out.println("[FA] ResourceLocation created: " + fontResource);
             
-            String tempPath = System.getProperty("java.io.tmpdir") + File.separator + "csce466_font.ttf";
-            System.out.println("[FA] Temp path: " + tempPath);
-            
-            try (InputStream is = mc.getResourceManager().getResource(fontResource).getInputStream();
-                 FileOutputStream fos = new FileOutputStream(tempPath)) {
-                byte[] buffer = new byte[8192];
-                int len, total = 0;
-                while ((len = is.read(buffer)) != -1) {
-                    fos.write(buffer, 0, len);
-                    total += len;
-                }
-                System.out.println("[FA] ✓ Font file extracted: " + total + " bytes");
+            // Прочитаем весь файл в байты
+            InputStream is = mc.getResourceManager().getResource(fontResource).getInputStream();
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            byte[] data = new byte[16384];
+            int nRead;
+            while ((nRead = is.read(data, 0, data.length)) != -1) {
+                buffer.write(data, 0, nRead);
             }
+            is.close();
+            byte[] fontBytes = buffer.toByteArray();
+            System.out.println("[FA] ✓ Font loaded from assets: " + fontBytes.length + " bytes");
             
-            // Загружаем в ImGui
-            short[] cyrillic = new short[] { 0x0020, 0x007E, 0x0400, 0x044F, 0 };
-            io.getFonts().addFontFromFileTTF(tempPath, 16.0f, null, cyrillic);
-            System.out.println("[FA] ✓✓✓ SUCCESS: Font from assets loaded with Cyrillic!");
+            // Сохраняем во временный файл (ImGui требует путь к файлу)
+            String tempPath = System.getProperty("java.io.tmpdir") + File.separator + "csce466_font_" + System.currentTimeMillis() + ".ttf";
+            FileOutputStream fos = new FileOutputStream(tempPath);
+            fos.write(fontBytes);
+            fos.close();
+            System.out.println("[FA] ✓ Temp file: " + tempPath);
+            
+            // Загружаем в ImGui с поддержкой кириллицы
+            io.getFonts().addFontFromFileTTF(tempPath, 16.0f, null, cyrillicRanges);
+            System.out.println("[FA] ✓✓✓ SUCCESS: Font loaded with Cyrillic support!");
             System.out.println("====== [Ban Assistant] FONT READY ======\n");
-            return;  // Выход, если успешно
+            return;
         } catch (Exception e) {
-            System.out.println("[FA] ✗ Failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            System.out.println("[FA] ✗ Assets failed: " + e.getClass().getSimpleName());
+            e.printStackTrace();
         }
 
-        // ===== СТРАТЕГИЯ 2: Системные шрифты =====
+        // ===== СТРАТЕГИЯ 2: Системные шрифты с кириллицей =====
         System.out.println("[FA] Attempt 2: Load from system fonts");
         String[] fontPaths = new String[] {
+            // Windows (Arial/Segoe UI have Cyrillic)
             "C:\\Windows\\Fonts\\arial.ttf",
             "C:\\Windows\\Fonts\\segoeui.ttf",
+            "C:\\Windows\\Fonts\\calibri.ttf",
+            // Linux
             "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
             "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+            // macOS
             "/Library/Fonts/Arial.ttf",
+            "/System/Library/Fonts/Helvetica.ttc",
         };
 
         for (String fontPath : fontPaths) {
             try {
                 File f = new File(fontPath);
-                if (!f.exists()) {
-                    System.out.println("[FA] X " + fontPath);
-                    continue;
+                if (f.exists() && f.canRead()) {
+                    System.out.println("[FA] ✓ Found: " + fontPath);
+                    io.getFonts().addFontFromFileTTF(fontPath, 16.0f, null, cyrillicRanges);
+                    System.out.println("[FA] ✓✓✓ SUCCESS: System font loaded with Cyrillic!");
+                    System.out.println("====== [Ban Assistant] FONT READY ======\n");
+                    return;
                 }
-                System.out.println("[FA] Found: " + fontPath);
-                
-                short[] cyrillic = new short[] { 0x0020, 0x007E, 0x0400, 0x044F, 0 };
-                io.getFonts().addFontFromFileTTF(fontPath, 16.0f, null, cyrillic);
-                System.out.println("[FA] ✓✓✓ SUCCESS: System font loaded with Cyrillic!");
-                System.out.println("====== [Ban Assistant] FONT READY ======\n");
-                return;  // Выход, если успешно
             } catch (Exception e) {
-                System.out.println("[FA] ! " + fontPath + ": " + e.getClass().getSimpleName());
+                System.out.println("[FA] ! " + fontPath + " failed: " + e.getClass().getSimpleName());
             }
         }
 
-        // ===== СТРАТЕГИЯ 3: Используем встроенный шрифт ImGui (ASCII-only) =====
-        System.out.println("[FA] ✗✗✗ All attempts failed. Using ImGui default font (ASCII only).");
-        System.out.println("[FA] Cyrillic text will display as: ?????");
+        // ===== FALLBACK: Встроенный шрифт ImGui =====
+        System.out.println("[FA] ✗✗✗ FALLBACK: Using ImGui default font");
+        System.out.println("[FA] WARNING: Cyrillic will display as ????? ");
         System.out.println("[FA]");
-        System.out.println("[FA] ===== HOW TO FIX =====");
-        System.out.println("[FA] Option 1: Download font and place:");
-        System.out.println("[FA]   src/main/resources/assets/csce466/fonts/Roboto-Regular.ttf");
-        System.out.println("[FA] (Download from: https://fonts.google.com/?query=roboto)");
-        System.out.println("[FA]");
-        System.out.println("[FA] Option 2: Install Cyrillic fonts on your system:");
-        System.out.println("[FA]   Windows: Arial/Segoe UI (pre-installed)");
-        System.out.println("[FA]   Linux: sudo apt install fonts-liberation fonts-dejavu");
-        System.out.println("[FA]   macOS: System already has Cyrillic fonts");
+        System.out.println("[FA] HOW TO FIX:");
+        System.out.println("[FA] 1. Place Roboto-Regular.ttf (or any TTF with Cyrillic) in:");
+        System.out.println("[FA]    src/main/resources/assets/csce466/fonts/Roboto-Regular.ttf");
+        System.out.println("[FA] 2. OR make sure system has fonts: Arial, DejaVu Sans, Liberation Sans");
+        System.out.println("[FA] 3. Download Roboto: https://fonts.google.com/?query=roboto");
         System.out.println("====== [Ban Assistant] FONT INITIALIZATION COMPLETE ======\n");
     }
 }
