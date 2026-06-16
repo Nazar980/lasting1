@@ -15,6 +15,7 @@
 
 buildscript {
     repositories {
+        maven { url = 'https://maven.parchmentmc.org' }
         maven { url = 'https://maven.minecraftforge.net' }
         mavenCentral()
         maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
@@ -53,7 +54,7 @@ println "Mappings: ${minecraft.mappings}"
 
 minecraft {
     // Mojang official mappings для 1.16.5
-    mappings channel: 'official', version: '1.16.5'
+    mappings channel: 'parchment', version: '2021.10.17-1.16.5'
 
     runs {
         client {
