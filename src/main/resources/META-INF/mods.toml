@@ -1,0 +1,29 @@
+modLoader="javafml"
+# 1.16.5 = Forge 36.x
+loaderVersion="[36,)"
+
+license="All rights reserved"
+
+[[mods]]
+modId="examplemod"
+version="1.0.0"
+displayName="Example Mod"
+authors="Root3287"
+description='''
+This is a long form description of the mod.
+You can write whatever you want here.
+'''
+
+[[dependencies.examplemod]]
+    modId="forge"
+    mandatory=true
+    versionRange="[36,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.examplemod]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.16.5,1.17)"
+    ordering="NONE"
+    side="BOTH"
