@@ -1,8 +1,10 @@
 package edu.unl.csce466.imgui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Objects;
 import imgui.ImGui;
+import imgui.ImGuiIO;
 import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
@@ -55,6 +57,12 @@ public class ImGuiRenderer {
         //   2) не ломались клавиатурные/мышиные события Minecraft когда ImGui не открыт,
         //   3) не приходилось вручную прокидывать все события через Forge-ивенты.
         imGuiGlfw.init(Minecraft.getInstance().getWindow().getWindow(), true);
+
+        // ===== Загрузка шрифта с поддержкой кириллицы =====
+        // Dear ImGui по умолчанию использует встроенный шрифт, который содержит только ASCII.
+        // Для русского текста нужно явно добавить шрифт TTF с поддержкой кириллицы.
+        // Ищем системный шрифт (Windows / Linux / macOS) или используем встроенный Roboto.
+        loadCyrillicFont();
 
         try {
             initGl3Renderer("#version 410 core");
@@ -137,5 +145,50 @@ public class ImGuiRenderer {
         imGuiGl.renderDrawData(Objects.requireNonNull(ImGui.getDrawData()));
 
         // Никакого кода для Viewports - он удалён
+    }
+
+    // ================= Загрузка шрифта с кириллицей =================
+    private void loadCyrillicFont() {
+        ImGuiIO io = ImGui.getIO();
+
+        // Попытаемся загрузить системный шрифт с поддержкой кириллицы.
+        // На Windows это обычно C:\Windows\Fonts\arial.ttf или segoeui.ttf
+        // На Linux это /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf
+        // На macOS это /Library/Fonts/Arial.ttf
+        String[] fontPaths = new String[] {
+            "C:\\Windows\\Fonts\\arial.ttf",           // Windows
+            "C:\\Windows\\Fonts\\segoeui.ttf",         // Windows (красивый)
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",  // Linux
+            "/Library/Fonts/Arial.ttf",                 // macOS
+        };
+
+        boolean fontLoaded = false;
+        for (String fontPath : fontPaths) {
+            try {
+                File f = new File(fontPath);
+                if (f.exists()) {
+                    // В imgui-java 1.86+ метод: ImFontAtlas.addFontFromFileTTF(filename, size, config, glyphRange)
+                    // Если этот метод недоступен, используем fallback через addFontDefault().
+                    try {
+                        short[] cyrillic = io.getFonts().getGlyphRangesCyrillic();
+                        io.getFonts().addFontFromFileTTF(fontPath, 16.0f, null, cyrillic);
+                        fontLoaded = true;
+                        break;
+                    } catch (NoSuchMethodError e) {
+                        // Старая версия imgui-java без поддержки addFontFromFileTTF
+                        // Используем встроенный шрифт (без поддержки кириллицы, но это лучше, чем крах)
+                    }
+                }
+            } catch (Exception ignored) {
+                // Шрифт не найден, пробуем следующий
+            }
+        }
+
+        if (!fontLoaded) {
+            // Если системный шрифт не загружен, используем встроенный (по умолчанию он там уже есть)
+            // Встроенный шрифт ImGui не содержит кириллицы, потому русские буквы будут выглядеть как ?????
+            // Но в 1.16.5 с обычными шрифтами Windows/Linux это маловероятно.
+            System.out.println("[Ban Assistant] Could not load system TTF font. ImGui will use default (ASCII only) font.");
+        }
     }
 }
