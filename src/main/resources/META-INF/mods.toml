@@ -1,5 +1,6 @@
 modLoader="javafml"
-loaderVersion="[43,)"
+# 1.16.5 = Forge 36.x
+loaderVersion="[36,)"
 
 license="All rights reserved"
 
@@ -16,13 +17,13 @@ You can write whatever you want here.
 [[dependencies.examplemod]]
     modId="forge"
     mandatory=true
-    versionRange="[43,)"
+    versionRange="[36,)"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.examplemod]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.19.2,1.20)"
+    versionRange="[1.16.5,1.17)"
     ordering="NONE"
     side="BOTH"

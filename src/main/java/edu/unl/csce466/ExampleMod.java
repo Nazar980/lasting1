@@ -1,27 +1,29 @@
 package edu.unl.csce466;
 
-import com.mojang.logging.LogUtils;
-import edu.unl.csce466.imgui.ImGuiRenderer;
 import edu.unl.csce466.screens.ImGuiScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
-import org.slf4j.Logger;
 
 @Mod(ExampleMod.MODID)
 public class ExampleMod {
     public static final String MODID = "examplemod";
-    private static final Logger LOGGER = LogUtils.getLogger();
+    // 1.16.5 не имеет com.mojang.logging.LogUtils -> используем log4j напрямую
+    private static final Logger LOGGER = LogManager.getLogger();
     public static final ImGuiScreen IMGUI_SCREEN = ImGuiScreen.getInstance();
 
     public ExampleMod() {
-        var modBus = FMLJavaModLoadingContext.get().getModEventBus();
+        // Java 8 не поддерживает "var" -> явный тип
+        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(IMGUI_SCREEN);
     }
@@ -30,12 +32,14 @@ public class ExampleMod {
     public static class ClientModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
-            // IMGUI_SCREEN.init(); — убрано, больше не нужно и вызывало ошибку
+            // ImGui инициализируется лениково при первом открытии экрана (ImGuiScreen.init()),
+            // поэтому здесь ничего вызывать не нужно.
         }
     }
 
+    // 1.16.5: событие называется InputEvent.KeyInputEvent (в 1.19.2 было InputEvent.Key)
     @SubscribeEvent
-    public void onKeyInput(InputEvent.Key event) {
+    public void onKeyInput(InputEvent.KeyInputEvent event) {
         if (Minecraft.getInstance().player == null) return;
         if (Minecraft.getInstance().screen != null) return;
         if (event.getKey() == GLFW.GLFW_KEY_L) {

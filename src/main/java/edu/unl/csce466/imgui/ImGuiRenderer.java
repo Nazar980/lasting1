@@ -2,7 +2,6 @@ package edu.unl.csce466.imgui;
 
 import java.util.ArrayList;
 import java.util.Objects;
-import org.lwjgl.glfw.GLFW;
 import imgui.ImGui;
 import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
@@ -10,20 +9,29 @@ import imgui.glfw.ImGuiImplGlfw;
 import net.minecraft.client.Minecraft;
 
 public class ImGuiRenderer {
-    private static ImGuiRenderer _INSTANCE = null;
+    private static ImGuiRenderer INSTANCE = null;
 
     public static ImGuiRenderer getInstance() {
-        if (_INSTANCE == null) _INSTANCE = new ImGuiRenderer();
-        return _INSTANCE;
+        if (INSTANCE == null) INSTANCE = new ImGuiRenderer();
+        return INSTANCE;
     }
 
-    private ArrayList<ImGuiCall> _preDrawCalls = new ArrayList<ImGuiCall>();
-    private ArrayList<ImGuiCall> _drawCalls = new ArrayList<ImGuiCall>();
+    private ArrayList<ImGuiCall> preDrawCalls = new ArrayList<ImGuiCall>();
+    private ArrayList<ImGuiCall> drawCalls = new ArrayList<ImGuiCall>();
 
     private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
     private final ImGuiImplGl3 imGuiGl = new ImGuiImplGl3();
 
+    // Флаг того, что ImGui-контекст уже создан.
+    // В исходном моде init() нигде не вызывался (был закомментирован) - меню не показывалось.
+    // Теперь экран инициализирует ImGui лениково при первом открытии.
+    private boolean initialized = false;
+
     private ImGuiRenderer() {
+    }
+
+    public boolean isInitialized() {
+        return initialized;
     }
 
     public void init() {
@@ -34,7 +42,7 @@ public class ImGuiRenderer {
         ImGui.createContext();
         config.execute();
 
-        // Явно отключаем Viewports — это перекрывает любой дефолт
+        // Явно отключаем Viewports - это перекрывает любой дефолт
         ImGui.getIO().setConfigFlags(ImGui.getIO().getConfigFlags() & ~ImGuiConfigFlags.ViewportsEnable);
 
         // Docking оставляем, если хочешь вкладки внутри окна
@@ -44,12 +52,14 @@ public class ImGuiRenderer {
 
         try {
             initGl3Renderer("#version 410 core");
+            initialized = true;
             return;
         } catch (Exception ignored) {
         }
 
         try {
             initGl3Renderer("#version 150 core");
+            initialized = true;
             return;
         } catch (Exception ignored) {
         }
@@ -94,32 +104,32 @@ public class ImGuiRenderer {
     }
 
     public void preDraw(ImGuiCall drawCall) {
-        _preDrawCalls.add(drawCall);
+        preDrawCalls.add(drawCall);
     }
 
     public void draw(ImGuiCall drawCall) {
-        _drawCalls.add(drawCall);
+        drawCalls.add(drawCall);
     }
 
     public void render() {
-        for (ImGuiCall preDrawCall : _preDrawCalls) {
+        for (ImGuiCall preDrawCall : preDrawCalls) {
             preDrawCall.execute();
         }
-        _preDrawCalls.clear();
+        preDrawCalls.clear();
 
         imGuiGlfw.newFrame();
         newFrameGl3Renderer();
         ImGui.newFrame();
 
         // Твой ImGui контент здесь (drawCalls)
-        for (ImGuiCall drawCall : _drawCalls) {
+        for (ImGuiCall drawCall : drawCalls) {
             drawCall.execute();
         }
-        _drawCalls.clear();
+        drawCalls.clear();
 
         ImGui.render();
         imGuiGl.renderDrawData(Objects.requireNonNull(ImGui.getDrawData()));
 
-        // Никакого кода для Viewports — он удалён
+        // Никакого кода для Viewports - он удалён
     }
 }

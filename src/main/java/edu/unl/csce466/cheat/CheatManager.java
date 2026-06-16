@@ -1,4 +1,4 @@
-package edu.unl.csce466.cheat;  // ← Вот этот пакет!
+package edu.unl.csce466.cheat;  // <- Этот пакет остаётся без изменений
 
 public class CheatManager {
     // Основные toggles (вкл/выкл)
@@ -14,7 +14,7 @@ public class CheatManager {
     public static float flySpeed = 0.1f;             // скорость полёта
 
     // Для ImGui sliders (ImFloat требует ref, поэтому используем массивы как хак)
-    // Или можно в ImGuiScreen использовать ImFloat каждый раз — но static удобно хранить здесь
+    // Или можно в ImGuiScreen использовать ImFloat каждый раз - но static удобно хранить здесь
     public static float[] speedMultiplierRef = {2.0f};
     public static float[] reachDistanceRef = {4.5f};
     public static float[] flySpeedRef = {0.1f};

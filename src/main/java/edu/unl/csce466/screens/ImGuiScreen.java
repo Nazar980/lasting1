@@ -1,6 +1,6 @@
 package edu.unl.csce466.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import edu.unl.csce466.imgui.ImGuiRenderer;
 import imgui.ImGui;
 import imgui.ImGuiIO;
@@ -10,18 +10,18 @@ import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.util.text.StringTextComponent;
 
 public class ImGuiScreen extends Screen {
-    private static ImGuiScreen _INSTANCE = null;
+    private static ImGuiScreen INSTANCE = null;
     private boolean buttonClicked = false;
     private final ImBoolean showDemo = new ImBoolean(false);
     private final ImBoolean showStyleEditor = new ImBoolean(false);
 
     // Цвета (розовый заголовок 245,70,130,220 везде)
     private final float[] colWindowBg = {30/255f, 30/255f, 35/255f, 180/255f};
-    private final float[] colTitleBg = {245/255f, 70/255f, 130/255f, 220/255f};  // ← Твой любимый
+    private final float[] colTitleBg = {245/255f, 70/255f, 130/255f, 220/255f};  // <- Твой любимый
     private final float[] colTitleBgActive = {245/255f, 70/255f, 130/255f, 220/255f};
     private final float[] colTitleBgCollapsed = {245/255f, 70/255f, 130/255f, 160/255f};
     private final float[] colText = {1f, 1f, 1f, 1f};
@@ -38,21 +38,39 @@ public class ImGuiScreen extends Screen {
     private final float[] colFrameBgActive = {90/255f, 90/255f, 100/255f, 220/255f};
 
     public static ImGuiScreen getInstance() {
-        if (_INSTANCE == null) _INSTANCE = new ImGuiScreen();
-        return _INSTANCE;
+        if (INSTANCE == null) INSTANCE = new ImGuiScreen();
+        return INSTANCE;
     }
 
     private ImGuiScreen() {
-        super(Component.literal("ImGui"));
+        // 1.16.5: Component.literal(...) -> new StringTextComponent(...)
+        super(new StringTextComponent("ImGui"));
     }
 
     @Override
-    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+    protected void init() {
+        super.init();
+        // Гарантируем, что ImGui-контекст создан ДО любых событий мыши/рендера.
+        ImGuiRenderer renderer = ImGuiRenderer.getInstance();
+        if (!renderer.isInitialized()) {
+            renderer.init();
+        }
+    }
+
+    @Override
+    // 1.16.5: render принимает MatrixStack (в 1.19.2 был PoseStack)
+    public void render(MatrixStack poseStack, int mouseX, int mouseY, float partialTick) {
+        ImGuiRenderer renderer = ImGuiRenderer.getInstance();
+        if (!renderer.isInitialized()) {
+            renderer.init();
+        }
+
         ImGuiIO io = ImGui.getIO();
         Minecraft mc = Minecraft.getInstance();
         io.setMousePos((float) mc.mouseHandler.xpos(), (float) mc.mouseHandler.ypos());
 
-        ImGuiRenderer.getInstance().draw(() -> {
+        // Регистрируем содержимое меню для текущего кадра...
+        renderer.draw(() -> {
             applyCurrentColors();
 
             ImGui.setNextWindowSize(500, 400, ImGuiCond.FirstUseEver);
@@ -62,10 +80,10 @@ public class ImGuiScreen extends Screen {
                 ImGuiCond.FirstUseEver
             );
 
-            // Разрешаем закрытие, сворачивание и ресайз — убрали NoCollapse и NoResize
+            // Разрешаем закрытие, сворачивание и ресайз - убрали NoCollapse и NoResize
             int flags = ImGuiWindowFlags.None;
 
-            ImGui.begin("GD Mega Hack", flags);  // ← Родной заголовок с кнопками × и −
+            ImGui.begin("GD Mega Hack", flags);  // <- Родной заголовок с кнопками x и -
 
             ImGui.separator();
 
@@ -115,6 +133,9 @@ public class ImGuiScreen extends Screen {
                 ImGui.showDemoWindow(showDemo);
             }
         });
+
+        // ...и отрисовываем его в этом же кадре (в исходнике этот вызов отсутствовал).
+        renderer.render();
     }
 
     private void applyCurrentColors() {
