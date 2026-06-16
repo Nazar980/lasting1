@@ -357,7 +357,8 @@ public class ImGuiScreen extends Screen {
             return;
         }
         // Отправляем команду как клиент от своего имени (как если бы игрок ввёл её в чат)
-        mc.player.connection.sendPacket(new CChatMessagePacket(cmd));
+        // 1.16.5: метод называется send(), не sendPacket()
+        mc.player.connection.send(new CChatMessagePacket(cmd));
         setStatus("Ban command sent: " + cmd);
     }
 
