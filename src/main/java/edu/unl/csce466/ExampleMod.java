@@ -21,7 +21,6 @@ public class ExampleMod {
     public static final ImGuiScreen IMGUI_SCREEN = ImGuiScreen.getInstance();
 
     public ExampleMod() {
-        // Java 8 не поддерживает "var" -> явный тип
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(IMGUI_SCREEN);
