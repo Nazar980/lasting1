@@ -33,9 +33,6 @@ public class ImGuiRenderer {
     private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
     private final ImGuiImplGl3 imGuiGl = new ImGuiImplGl3();
 
-    // Флаг того, что ImGui-контекст уже создан.
-    // Инициализация вызывается один раз из миксина RenderSystemMixin#initRenderer
-    // (в момент старта рендера Minecraft), повторные вызовы init() игнорируются.
     private boolean initialized = false;
 
     private ImGuiRenderer() {
@@ -52,18 +49,11 @@ public class ImGuiRenderer {
     public void init(ImGuiCall config) {
         ImGui.createContext();
         config.execute();
-
-        // Явно отключаем Viewports - это перекрывает любой дефолт
         ImGui.getIO().setConfigFlags(ImGui.getIO().getConfigFlags() & ~ImGuiConfigFlags.ViewportsEnable);
 
-        // Docking оставляем (для вкладок внутри окна)
         ImGui.getIO().addConfigFlags(ImGuiConfigFlags.DockingEnable);
-
-        // installCallbacks = true: ImGui сам ставит GLFW-коллбэки (key / char / mouse / scroll / cursorpos)
-        // и автоматически вызывает предыдущие (майнкрафтовские) через встроенную цепочку.
         imGuiGlfw.init(Minecraft.getInstance().getWindow().getWindow(), true);
 
-        // ===== Загрузка шрифта с поддержкой кириллицы (ПОСЛЕ imGuiGlfw.init!) =====
         loadCyrillicFont();
 
         try {
@@ -113,7 +103,6 @@ public class ImGuiRenderer {
         try {
             imGuiGl.getClass().getMethod("newFrame").invoke(imGuiGl);
         } catch (NoSuchMethodException ignored) {
-            // Старые версии не требуют newFrame для GL3
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException("Failed to call ImGuiImplGl3.newFrame() via reflection", e);
         }
@@ -137,7 +126,6 @@ public class ImGuiRenderer {
         newFrameGl3Renderer();
         ImGui.newFrame();
 
-        // Твой ImGui контент здесь (drawCalls)
         for (ImGuiCall drawCall : drawCalls) {
             drawCall.execute();
         }
@@ -146,48 +134,35 @@ public class ImGuiRenderer {
         ImGui.render();
         imGuiGl.renderDrawData(Objects.requireNonNull(ImGui.getDrawData()));
 
-        // Никакого кода для Viewports - он удалён
     }
-
-    // ================= Загрузка шрифта с кириллицей =================
     private void loadCyrillicFont() {
         ImGuiIO io = ImGui.getIO();
         System.out.println("\n\n====== [Ban Assistant] FONT LOADING (ImGuiMemoryTTF Method) ======");
 
         try {
-            // ===== Шаг 1: Читаем шрифт из ассетс в байты =====
             System.out.println("[FA] Step 1: Loading font bytes from assets...");
             byte[] fontBytes = loadFontBytesFromAssets("csce466", "fonts/Roboto-Regular.ttf");
             System.out.println("[FA] ✓ Font bytes loaded: " + fontBytes.length + " bytes");
-
-            // ===== Шаг 2: Добавляем дефолтный шрифт (ASCII) =====
             System.out.println("[FA] Step 2: Adding default font (ASCII)...");
             io.getFonts().addFontDefault();
 
-            // ===== Шаг 3: Создаём builder для диапазонов глифов =====
             System.out.println("[FA] Step 3: Building glyph ranges (ASCII + Cyrillic)...");
             ImFontGlyphRangesBuilder rangesBuilder = new ImFontGlyphRangesBuilder();
-            rangesBuilder.addRanges(io.getFonts().getGlyphRangesDefault());  // ASCII
-            rangesBuilder.addRanges(io.getFonts().getGlyphRangesCyrillic());  // Cyrillic
+            rangesBuilder.addRanges(io.getFonts().getGlyphRangesDefault());  
+            rangesBuilder.addRanges(io.getFonts().getGlyphRangesCyrillic()); 
             short[] glyphRanges = rangesBuilder.buildRanges();
             System.out.println("[FA] ✓ Glyph ranges built: " + glyphRanges.length + " entries");
 
-            // ===== Шаг 4: Создаём ImFontConfig с merge mode =====
             System.out.println("[FA] Step 4: Creating ImFontConfig with merge mode...");
             ImFontConfig fontConfig = new ImFontConfig();
-            fontConfig.setMergeMode(true);  // ВАЖНО: объединяем с дефолтным шрифтом
-
-            // ===== Шаг 5: Добавляем наш шрифт из памяти =====
+            fontConfig.setMergeMode(true);
             System.out.println("[FA] Step 5: Adding font from memory TTF...");
             ImFont customFont = io.getFonts().addFontFromMemoryTTF(fontBytes, 16.0f, fontConfig, glyphRanges);
             System.out.println("[FA] ✓ Font added to atlas: " + (customFont != null ? "SUCCESS" : "NULL"));
-
-            // ===== Шаг 6: Пересобираем атлас (КРИТИЧНО!) =====
             System.out.println("[FA] Step 6: Building font atlas...");
             io.getFonts().build();
             System.out.println("[FA] ✓✓✓ Font atlas built successfully!");
 
-            // ===== Шаг 7: Очищаем config =====
             fontConfig.destroy();
             System.out.println("[FA] ✓ Font config destroyed");
 
@@ -200,7 +175,6 @@ public class ImGuiRenderer {
             e.printStackTrace();
         }
 
-        // ===== FALLBACK: Если всё сломалось =====
         System.out.println("[FA]");
         System.out.println("[FA] ✗✗✗ Font loading failed. Using ImGui default (ASCII only)");
         System.out.println("[FA] Cyrillic will show as ?????");
@@ -210,10 +184,7 @@ public class ImGuiRenderer {
         System.out.println("====== [Ban Assistant] FONT INITIALIZATION COMPLETE ======\n");
     }
 
-    // Вспомогательный метод для загрузки файла из ассетс (как в примере GitHub)
-    // Используем ClassLoader, как в официальном примере imgui-java
     private byte[] loadFontBytesFromAssets(String namespace, String path) throws Exception {
-        // Ищем файл в classpath (src/main/resources/assets/csce466/fonts/Roboto-Regular.ttf)
         String resourcePath = "assets/" + namespace + "/" + path;
         System.out.println("[FA] Loading from classpath: " + resourcePath);
         
