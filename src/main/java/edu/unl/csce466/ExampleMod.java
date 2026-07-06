@@ -17,7 +17,6 @@ import org.lwjgl.glfw.GLFW;
 @Mod(ExampleMod.MODID)
 public class ExampleMod {
     public static final String MODID = "examplemod";
-    // 1.16.5 не имеет com.mojang.logging.LogUtils -> используем log4j напрямую
     private static final Logger LOGGER = LogManager.getLogger();
     public static final ImGuiScreen IMGUI_SCREEN = ImGuiScreen.getInstance();
 
@@ -32,12 +31,8 @@ public class ExampleMod {
     public static class ClientModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
-            // ImGui инициализируется лениково при первом открытии экрана (ImGuiScreen.init()),
-            // поэтому здесь ничего вызывать не нужно.
         }
     }
-
-    // 1.16.5: событие называется InputEvent.KeyInputEvent (в 1.19.2 было InputEvent.Key)
     @SubscribeEvent
     public void onKeyInput(InputEvent.KeyInputEvent event) {
         if (Minecraft.getInstance().player == null) return;
